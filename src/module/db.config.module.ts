@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import { UserEntity } from '@/entity/user.entity';
+import { MenuClosureEntity, MenuEntity } from '@/entity/menu.entity';
 
 // 根据 NODE_ENV 动态加载环境变量文件
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
@@ -64,7 +65,7 @@ export class TypeOrmConfigModule implements OnModuleInit {
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, MenuClosureEntity, MenuEntity])],
   exports: [TypeOrmModule],
 })
 export class GlobalEntitiesModule {}
