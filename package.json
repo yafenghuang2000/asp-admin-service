@@ -8,16 +8,18 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start --watch",
-    "start:dev": "nest start --watch",
+    "start": "NODE_ENV=development nest start --watch",
+    "start:test": "NODE_ENV=test nest start --watch",
+    "start:production": "NODE_ENV=production nest start --watch",
+    "start:staging": "NODE_ENV=staging nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
     "lint": "eslint . --fix",
     "prepare": "husky"
   },
   "dependencies": {
     "@commitlint/config-conventional": "^19.8.0",
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",

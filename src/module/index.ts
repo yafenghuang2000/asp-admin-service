@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
-import { UserController } from '@/controller/user.controller';
-import { UserService } from '@/service/userService';
-import { PasswordService } from '@/utils/PasswordService';
+// import { ConfigModule } from '@nestjs/config';
+import { TypeOrmConfigModule, GlobalEntitiesModule } from './db.config.module';
+// import { UserModule } from './user.module';
+
+// const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 @Module({
-  controllers: [UserController],
-  providers: [UserService, PasswordService],
-  exports: [UserService],
+  imports: [
+    TypeOrmConfigModule,
+    GlobalEntitiesModule,
+    // UserModule,
+  ],
+  controllers: [],
+  providers: [],
+  exports: [],
 })
 export class AppModule {}
