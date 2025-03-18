@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmConfigModule, GlobalEntitiesModule } from './db.config.module';
+import { TypeOrmConfigModule, GlobalEntitiesModule, GlobalConfigModule } from './db.config.module';
 import { JwtGlobalModule } from './jwt.config.module';
 import { UserModule } from './user.module';
 
 @Module({
-  imports: [TypeOrmConfigModule, GlobalEntitiesModule, JwtGlobalModule, UserModule],
+  imports: [
+    TypeOrmConfigModule,
+    GlobalEntitiesModule,
+    GlobalConfigModule,
+    JwtGlobalModule,
+    UserModule,
+  ],
   controllers: [],
   providers: [],
   exports: [],

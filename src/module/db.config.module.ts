@@ -8,15 +8,22 @@ import { UserEntity } from '@/entity/user.entity';
 // 根据 NODE_ENV 动态加载环境变量文件
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // 使配置模块全局可用
-      envFilePath,
+      envFilePath, // 动态加载环境变量文件
     }),
+  ],
+  exports: [ConfigModule], // 导出 ConfigModule
+})
+export class GlobalConfigModule {}
 
+@Global()
+@Module({
+  imports: [
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
@@ -64,7 +71,6 @@ export class GlobalEntitiesModule {}
 
 @Global()
 @Module({
-  imports: [ConfigModule],
   providers: [
     {
       provide: 'REDIS_CLIENT',
