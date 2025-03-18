@@ -1,18 +1,12 @@
 import { Global, Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-// import Redis from 'ioredis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import { UserEntity } from '@/entity/user.entity';
 
 // 根据 NODE_ENV 动态加载环境变量文件
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
-
-console.log('MYSQL_HOST:', process.env.NODE_MYSQL_HOST);
-console.log('MYSQL_USERNAME:', process.env.MYSQL_USERNAME);
-console.log('MYSQL_PASSWORD:', process.env.MYSQL_PASSWORD);
-console.log('MYSQL_DATABASE:', process.env.MYSQL_DATABASE);
 
 @Module({
   imports: [
@@ -80,7 +74,6 @@ export class GlobalEntitiesModule {}
         port: configService.get<number>('REDIS_PORT', 6379), // 从环境变量获取 Redis 端口，默认值为 6379
         password: configService.get<string>('REDIS_PASSWORD'), // 从环境变量获取 Redis 密码，默认值为 undefined
       }),
-      // useValue: redisClient,
     },
   ],
   exports: ['REDIS_CLIENT'],
