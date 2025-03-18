@@ -79,7 +79,7 @@ export class GlobalEntitiesModule {}
       useFactory: (configService: ConfigService) => ({
         host: configService.get<string>('REDIS_HOST', 'localhost'), // 从环境变量获取 Redis 主机，默认值为 'localhost'
         port: configService.get<number>('REDIS_PORT', 6379), // 从环境变量获取 Redis 端口，默认值为 6379
-        password: configService.get<string>('REDIS_PASSWORD'), // 从环境变量获取 Redis 密码，默认值为 undefined
+        password: configService.get<string>('REDIS_PASSWORD', ''), // 从环境变量获取 Redis 密码，默认值为 undefined
       }),
     },
   ],
