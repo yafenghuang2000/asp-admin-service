@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  development:
+    build:
+      context: .
+      args:
+        - NODE_ENV=development
+    ports:
+      - '8888:9000'
+    environment:
+      - NODE_ENV=development
+      - SERVICE_PORT=9000
+      - NODE_MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=123456789
+      - MYSQL_DATABASE=my-test
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    command: pnpm run start
+
+  test:
+    build:
+      context: .
+      args:
+        - NODE_ENV=test
+    ports:
+      - '9999:9000'
+    environment:
+      - NODE_ENV=test
+      - SERVICE_PORT=9000
+      - NODE_MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=123456789
+      - MYSQL_DATABASE=my-test
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    command: pnpm run start:test
+
+  staging:
+    build:
+      context: .
+      args:
+        - NODE_ENV=staging
+    ports:
+      - '9001:9000'
+    environment:
+      - NODE_ENV=staging
+      - SERVICE_PORT=9000
+      - NODE_MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=123456789
+      - MYSQL_DATABASE=my-test
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    command: pnpm run start:staging
+
+  production:
+    build:
+      context: .
+      args:
+        - NODE_ENV=production
+    ports:
+      - '9000:9000'
+    environment:
+      - NODE_ENV=production
+      - SERVICE_PORT=9000
+      - NODE_MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=123456789
+      - MYSQL_DATABASE=my-test
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    command: pnpm run start:production
