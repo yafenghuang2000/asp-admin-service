@@ -31,5 +31,9 @@ export class CreateMenuDto {
 
   @IsOptional()
   @IsString()
+  public sortOrder: number; //菜单排序
+
+  @IsOptional()
+  @IsString()
   public parentId?: string; // 父节点ID，用于构建层级关系
 }

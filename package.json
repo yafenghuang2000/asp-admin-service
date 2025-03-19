@@ -12,7 +12,6 @@
     "start:test": "NODE_ENV=test nest start --watch",
     "start:production": "NODE_ENV=production nest start --watch",
     "start:staging": "NODE_ENV=staging nest start --watch",
-    "start:debug": "nest start --debug --watch",
     "lint": "eslint . --fix",
     "prepare": "husky"
   },

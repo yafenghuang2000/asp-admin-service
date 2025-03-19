@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MenuClosureEntity, MenuEntity } from '@/entity/menu.entity';
 import { CreateMenuDto } from '@/dto/menu.dto';
+import MenuModulePrivateMethods from './MenuModulePrivateMethods';
 
 @Injectable()
 export default class MenuService {
@@ -16,171 +17,185 @@ export default class MenuService {
     this.MenuModulePrivateMethods = new MenuModulePrivateMethods(menuRepository);
   }
 
-  //查询全部菜单
+  /**
+   * 查询所有菜单项并构建树形结构
+   * @returns {Promise<MenuEntity[]>} 返回一个 Promise，解析后为树形结构的菜单列表。
+   */
   public async findAll(): Promise<MenuEntity[]> {
-    // 查询所有菜单项
-    const menus = await this.menuRepository.find();
-    // 查询所有层级关系
-    const closures = await this.menuClosureRepository.find();
-    // 构建树形结构
-    return this.MenuModulePrivateMethods['buildTree'](menus, closures);
+    try {
+      // 查询所有菜单项，按 sortOrder 排序
+      const menus = await this.menuRepository
+        .createQueryBuilder('menu')
+        .orderBy('menu.sortOrder', 'ASC')
+        .getMany();
+
+      // 如果没有菜单项，直接返回空数组
+      if (!menus.length) {
+        return [];
+      }
+
+      // 查询所有层级关系
+      const closures = await this.menuClosureRepository
+        .createQueryBuilder('closure')
+        .orderBy('closure.depth', 'ASC')
+        .getMany();
+
+      // 验证数据完整性
+      if (closures.length === 0) {
+        throw new Error('菜单层级关系数据不完整');
+      }
+
+      // 验证每个菜单项都有对应的闭包关系
+      const menuIds = new Set(menus.map((menu) => menu.id));
+      const closureMenuIds = new Set([
+        ...closures.map((closure) => closure.ancestor),
+        ...closures.map((closure) => closure.descendant),
+      ]);
+
+      const missingMenus = [...menuIds].filter((id) => !closureMenuIds.has(id));
+      if (missingMenus.length > 0) {
+        throw new Error(`以下菜单项缺少层级关系：${missingMenus.join(', ')}`);
+      }
+
+      // 构建树形结构
+      const tree = this.MenuModulePrivateMethods.buildTree(menus, closures);
+
+      // 打印树形结构
+      // console.log('\n菜单树形结构：');
+      this.MenuModulePrivateMethods.printMenuTree(tree);
+
+      return tree;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error('获取菜单列表失败：' + error.message);
+      }
+      throw new Error('获取菜单列表失败：未知错误');
+    }
   }
 
+  /**
+   *新增菜单
+   */
   public async createMenu(createMenuDto: CreateMenuDto): Promise<string> {
-    const { title, code, path, parentId, description, remark, type } = createMenuDto;
+    const { title, code, path, parentId, description, remark, type, sortOrder } = createMenuDto;
 
-    if (!title) {
-      throw new ConflictException('节点名称不能为空');
+    // 参数验证
+    if (!title || !code || !type) {
+      throw new ConflictException('菜单名称、编码和类型为必填项');
     }
 
-    // 使用事务处理
-    return await this.menuRepository.manager.transaction(async (transactionalEntityManager) => {
-      // 合并检查菜单节点，菜单名称和菜单的路径是否唯一
-      const existingMenu = await transactionalEntityManager.findOne(MenuEntity, {
-        where: [{ title }, { path }],
-      });
+    // 验证排序号
+    if (sortOrder !== undefined && sortOrder < 0) {
+      throw new ConflictException('排序号不能为负数');
+    }
 
-      if (existingMenu && existingMenu.path === path) {
-        throw new ConflictException('菜单路径已存在，无法重复添加');
-      }
-
-      if (existingMenu && existingMenu.title === title) {
-        throw new ConflictException('菜单名称已存在，无法重复添加');
-      }
-
-      // 查询当前最大 sortOrder
-      const maxSortOrder = await transactionalEntityManager
-        .createQueryBuilder(MenuEntity, 'menu')
-        .select('MAX(menu.sortOrder)', 'maxSortOrder')
-        .getRawOne();
-
-      const nextSortOrder = (maxSortOrder?.maxSortOrder || 0) + 1;
-
-      // 1. 插入菜单项
-      const menu = new MenuEntity();
-      menu.title = title;
-      menu.path = path;
-      menu.sortOrder = nextSortOrder;
-      menu.code = code;
-      menu.description = description;
-      menu.remark = remark;
-      menu.type = type;
-
-      // 生成 key
-      if (!parentId) {
-        const maxKey = await transactionalEntityManager
-          .createQueryBuilder(MenuEntity, 'menu')
-          .select('MAX(menu.key)', 'maxKey')
-          .getRawOne();
-        menu.key = (maxKey?.maxKey ? parseInt(maxKey.maxKey as string, 10) + 1 : 1).toString();
-      } else {
-        // 二级及以下菜单：key 为 父级key-1, 父级key-2...
-        const parentMenu = await transactionalEntityManager.findOne(MenuEntity, {
-          where: { id: parentId },
+    try {
+      return await this.menuRepository.manager.transaction(async (transactionalEntityManager) => {
+        // 检查标题和路径是否重复
+        const existingTitle = await transactionalEntityManager.findOne(MenuEntity, {
+          where: { title },
         });
-        if (!parentMenu) {
-          throw new ConflictException('父节点不存在');
+
+        if (existingTitle) {
+          throw new ConflictException('菜单名称已存在');
         }
 
-        const maxChildKey = await transactionalEntityManager
-          .createQueryBuilder(MenuEntity, 'menu')
-          .leftJoin(MenuClosureEntity, 'closure', 'closure.descendant = menu.id')
-          .where('closure.ancestor = :parentId AND closure.depth = 1', { parentId })
-          .select('MAX(menu.key)', 'maxKey')
-          .getRawOne();
-
-        const lastChildKey = (maxChildKey?.maxKey || `${parentMenu.key}-0`) as string;
-        const lastChildNumber = parseInt(lastChildKey.split('-').pop() || '0', 10);
-        const nextChildNumber = lastChildNumber + 1;
-        menu.key = `${parentMenu.key}-${nextChildNumber}`;
-      }
-
-      await transactionalEntityManager.save(menu);
-
-      // 2. 插入层级关系
-      if (parentId) {
-        // 确保父节点存在
-        const parentMenu = await transactionalEntityManager.findOne(MenuEntity, {
-          where: { id: parentId },
+        const existingPath = await transactionalEntityManager.findOne(MenuEntity, {
+          where: { path },
         });
-        if (!parentMenu) {
-          throw new ConflictException('父节点不存在');
+
+        if (existingPath) {
+          throw new ConflictException('菜单路径已存在');
         }
 
-        const parentClosures = await transactionalEntityManager.find(MenuClosureEntity, {
-          where: { descendant: parentId },
-        });
+        // 创建新菜单
+        const menu = new MenuEntity();
+        menu.title = title;
+        menu.code = code;
+        menu.type = type;
+        menu.path = path || '';
+        menu.sortOrder = sortOrder || 0;
+        menu.description = description || '';
+        menu.remark = remark || '';
 
-        for (const closure of parentClosures) {
-          const existingClosure = await transactionalEntityManager.findOne(MenuClosureEntity, {
-            where: {
-              ancestor: closure.ancestor,
-              descendant: menu.id,
-              depth: closure.depth + 1,
-            },
+        let parentMenu: MenuEntity | null = null;
+        if (parentId) {
+          parentMenu = await transactionalEntityManager.findOne(MenuEntity, {
+            where: { id: parentId },
           });
 
-          if (!existingClosure) {
+          if (!parentMenu) {
+            throw new ConflictException('父节点不存在');
+          }
+        }
+
+        // 生成菜单key
+        if (parentId && parentMenu) {
+          // 二级及以下菜单：key 为 父级key-1, 父级key-2...
+          const maxChildKey = await transactionalEntityManager
+            .createQueryBuilder(MenuEntity, 'menu')
+            .leftJoin(MenuClosureEntity, 'closure', 'closure.descendant = menu.id')
+            .where('closure.ancestor = :parentId AND closure.depth = 1', { parentId })
+            .select('MAX(menu.key)', 'maxKey')
+            .getRawOne();
+
+          const lastChildKey = (maxChildKey?.maxKey || `${parentMenu.key}-0`) as string;
+          const lastChildNumber = parseInt(lastChildKey.split('-').pop() || '0', 10);
+          const nextChildNumber = lastChildNumber + 1;
+          menu.key = `${parentMenu.key}-${nextChildNumber}`;
+        } else {
+          // 一级菜单：key 为 1, 2, 3...
+          const maxKey = await transactionalEntityManager
+            .createQueryBuilder(MenuEntity, 'menu')
+            .select('MAX(menu.key)', 'maxKey')
+            .getRawOne();
+          menu.key = (maxKey?.maxKey ? parseInt(maxKey.maxKey as string, 10) + 1 : 1).toString();
+        }
+
+        // 保存菜单
+        await transactionalEntityManager.save(menu);
+
+        // 处理闭包关系
+        if (parentId && parentMenu) {
+          // 获取父节点的所有祖先节点
+          const parentClosures = await transactionalEntityManager.find(MenuClosureEntity, {
+            where: { descendant: parentId },
+          });
+
+          // 批量创建闭包关系
+          const newClosures = parentClosures.map((closure) => {
             const newClosure = new MenuClosureEntity();
             newClosure.ancestor = closure.ancestor;
             newClosure.descendant = menu.id;
             newClosure.depth = closure.depth + 1;
-            await transactionalEntityManager.save(newClosure);
-          }
+            return newClosure;
+          });
+
+          // 添加自身到祖先的闭包关系
+          const selfClosure = new MenuClosureEntity();
+          selfClosure.ancestor = menu.id;
+          selfClosure.descendant = menu.id;
+          selfClosure.depth = 0;
+          newClosures.push(selfClosure);
+
+          // 批量保存闭包关系
+          await transactionalEntityManager.save(newClosures);
+        } else {
+          // 创建根节点的闭包关系
+          const rootClosure = new MenuClosureEntity();
+          rootClosure.ancestor = menu.id;
+          rootClosure.descendant = menu.id;
+          rootClosure.depth = 0;
+          await transactionalEntityManager.save(rootClosure);
         }
-      } else {
-        // 如果没有传入 parentId父节点，则创建一级目录
-        const rootClosure = new MenuClosureEntity();
-        rootClosure.ancestor = menu.id;
-        rootClosure.descendant = menu.id;
-        rootClosure.depth = 0;
-        await transactionalEntityManager.save(rootClosure);
+
+        return '菜单项新增成功';
+      });
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
       }
-
-      return '菜单项新增成功';
-    });
-  }
-}
-
-/**
- * 菜单模块接口私有方法
- */
-export class MenuModulePrivateMethods {
-  constructor(
-    private readonly menuRepository: Repository<MenuEntity>, // 通过构造函数接收 MenuEntity
-  ) {}
-  private buildTree(menus: MenuEntity[], closures: MenuClosureEntity[]): MenuEntity[] {
-    const menuMap = new Map<string, MenuEntity>();
-    const roots: MenuEntity[] = [];
-
-    // 将所有菜单项存入 Map
-    menus.forEach((menu) => {
-      if (!menu.children) {
-        menu.children = []; // 初始化子菜单数组，避免覆盖已有数据
-      }
-      menuMap.set(menu.id, menu);
-    });
-
-    // 构建树形结构
-    closures.forEach((closure) => {
-      const parent = menuMap.get(closure.ancestor);
-      const child = menuMap.get(closure.descendant);
-
-      if (parent && child) {
-        // 如果深度为 0 且 ancestor === descendant，表示是根节点
-        if (closure.depth === 0 && closure.ancestor === closure.descendant) {
-          if (!roots.includes(parent)) {
-            roots.push(parent);
-          }
-        } else if (closure.depth > 0) {
-          // 处理多层级关系
-          if (!parent.children.includes(child)) {
-            parent.children.push(child);
-          }
-        }
-      }
-    });
-
-    return roots;
+      throw new ConflictException('创建菜单失败：' + error.message);
+    }
   }
 }
