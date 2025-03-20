@@ -1,3 +1,7 @@
-<!-- # pm2 start dist/main.js --name my-nest-app-test --env test -->
+# 构建镜像
 
-pm2 start dist/main.js --name asp-xms-service-production --env production
+docker-compose build
+
+# 启动容器
+
+NODE_ENV=production docker-compose up
