@@ -7,7 +7,8 @@ import { UserEntity } from '@/entity/user.entity';
 import { MenuClosureEntity, MenuEntity } from '@/entity/menu.entity';
 
 // 根据 NODE_ENV 动态加载环境变量文件
-const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
+const envFilePath = `.env.${process.env.NODE_ENV || 'production'}`;
+console.log(envFilePath, 'envFilePath');
 
 @Global()
 @Module({

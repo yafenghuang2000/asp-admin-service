@@ -6,10 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "NODE_ENV=${NODE_ENV:-development} nest build",
-    "build:test": "NODE_ENV=${NODE_ENV:-test} nest build",
-    "build:production": "NODE_ENV=${NODE_ENV:-production} nest build",
-    "build:staging": "NODE_ENV=${NODE_ENV:-staging} nest build",
+    "build:prod": "NODE_ENV=production nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "NODE_ENV=development nest start --watch",
     "start:test": "NODE_ENV=test nest start --watch",
