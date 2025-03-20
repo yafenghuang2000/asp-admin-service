@@ -1,0 +1,7 @@
+services:
+  app:
+    build: .
+    ports:
+      - "9000:9000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}  # 从外部环境变量中读取，默认值为 production

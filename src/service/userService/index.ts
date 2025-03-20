@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import RedisCache from '@/utils/redisCache';
-import PasswordService from '@/utils/PasswordService';
+// import PasswordService from '@/utils/PasswordService';
 import { LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto } from '@/dto/user.dto';
 import { UserEntity } from '@/entity/user.entity';
 
@@ -13,7 +13,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly jwtService: JwtService, // 明确类型
-    private passwordService: PasswordService,
+    // private passwordService: PasswordService,
   ) {}
 
   public login = async (loginDto: LoginDto): Promise<LoginResponseDto> => {
@@ -25,11 +25,11 @@ export class UserService {
       throw new BadRequestException('用户不存在');
     }
 
-    const isMatch = this.passwordService.comparePassword(loginDto.password, user.password);
+    // const isMatch = this.passwordService.comparePassword(loginDto.password, user.password);
 
-    if (!isMatch) {
-      throw new BadRequestException('密码错误');
-    }
+    // if (!isMatch) {
+    //   throw new BadRequestException('密码错误');
+    // }
 
     const token = this.jwtService.sign(
       {
@@ -79,12 +79,13 @@ export class UserService {
       throw new BadRequestException('手机号码格式不正确');
     }
 
-    const hashedPassword = this.passwordService.hashPassword(registerDto.password);
+    // const hashedPassword = this.passwordService.hashPassword(registerDto.password);
 
     try {
       const newUser = this.userRepository.create({
         username: registerDto.username,
-        password: hashedPassword,
+        // password: hashedPassword,
+        password: registerDto.password,
         mobile_number: registerDto.mobile_number,
         email: registerDto.email,
       });
