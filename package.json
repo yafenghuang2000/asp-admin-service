@@ -6,12 +6,12 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build:prod": "NODE_ENV=production nest build",
+    "build": "",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "NODE_ENV=development nest start --watch",
-    "start:test": "NODE_ENV=test nest start --watch",
-    "start:production": "NODE_ENV=production nest start --watch",
-    "start:staging": "NODE_ENV=staging nest start --watch",
+    "dev": "NODE_ENV=development nest start --watch",
+    "dev:test": "NODE_ENV=test nest start --watch",
+    "dev:production": "NODE_ENV=production nest start --watch",
+    "dev:staging": "NODE_ENV=staging nest start --watch",
     "lint": "eslint . --fix",
     "prepare": "husky"
   },
