@@ -1,7 +1,26 @@
+#services:
+#  app:
+#    build:
+#      context: .
+#      args:
+#        NODE_ENV: ${NODE_ENV:-production}  # 从命令行参数中读取，默认值为 production
+#        SERVICE_PORT: ${SERVICE_PORT:-9000}  # 从环境变量中读取，默认值为 9000
+#    image: asp-admin-service-${NODE_ENV:-production}  # 动态设置镜像名称
+#    ports:
+#      - "${SERVICE_PORT:-9000}:${SERVICE_PORT:-9000}"  # 设置默认值为 9000
+#    environment:
+#      NODE_ENV: ${NODE_ENV:-production}  # 从外部环境变量中读取，默认值为 production
+
+
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        NODE_ENV: ${NODE_ENV:-production}  # 从命令行参数中读取，默认值为 production
+        SERVICE_PORT: ${SERVICE_PORT:-9000}  # 从环境变量中读取，默认值为 9000
+    image: asp-admin-service-${NODE_ENV:-production}  # 动态设置镜像名称
     ports:
-      - "9000:9000"
+      - "${SERVICE_PORT:-9000}:${SERVICE_PORT:-9000}"  # 设置默认值为 9000
     environment:
       NODE_ENV: ${NODE_ENV:-production}  # 从外部环境变量中读取，默认值为 production

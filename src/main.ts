@@ -22,6 +22,8 @@ async function bootstrap(): Promise<void> {
     SwaggerModule.setup('api', app, document);
     const prompt = process.env.SERVICE_PORT ?? 3000;
     await app.listen(prompt);
+    console.log(prompt, 'prompt');
+
     console.log(`asp-nest-service服务启动成功:${prompt ?? 3000}`);
   } catch (error) {
     console.log(

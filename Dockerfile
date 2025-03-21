@@ -17,9 +17,16 @@ COPY . .
 # 构建项目
 RUN pnpm build
 
+# 动态加载环境变量文件
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+# 定义 SERVICE_PORT 环境变量
+ARG SERVICE_PORT=9000
+ENV SERVICE_PORT=${SERVICE_PORT}
+
 # 暴露端口
-EXPOSE 9000
+EXPOSE ${SERVICE_PORT}
 
 # 启动应用
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]
-

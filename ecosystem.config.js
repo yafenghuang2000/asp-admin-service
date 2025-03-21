@@ -1,10 +1,11 @@
 module.exports = {
   apps: [
     {
-      name: 'asp-xms-service-production',
+      name: `asp-xms-service-${process.env.NODE_ENV || 'production'}`, // 动态设置服务名称
       script: 'dist/main.js',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: process.env.NODE_ENV || 'production', // 动态设置环境变量
+        SERVICE_PORT: process.env.SERVICE_PORT || 9000, // 确保这里使用了正确的端口
       },
       log_file: '/app/logs/app.log',
       out_file: '/app/logs/out.log',
@@ -14,3 +15,5 @@ module.exports = {
     },
   ],
 };
+
+console.log(process.env.NODE_ENV);

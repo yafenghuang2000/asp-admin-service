@@ -1,7 +1,7 @@
 # 构建镜像
 
-docker-compose build
+NODE_ENV=test SERVICE_PORT=9999 docker-compose build
 
 # 启动容器
 
-NODE_ENV=production docker-compose up
+NODE_ENV=test SERVICE_PORT=9999 docker-compose up
