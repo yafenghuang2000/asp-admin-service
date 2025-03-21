@@ -13,7 +13,7 @@ if [ -z "$ENV" ]; then
   echo "错误：无法从镜像名称中提取环境名称"
   exit 1
 fi
-# docker pull yafenghuang/asp-admin-service-test:test-20250321133838
+
 
 # 根据环境设置 SERVICE_PORT
 if [ "$ENV" == "test" ]; then
@@ -44,16 +44,6 @@ docker pull "${IMAGE_NAME}" || {
   exit 1
 }
 
-
-# 运行容器
-# echo "启动 ${IMAGE_NAME} 容器，使用端口 ${PORT}..."
-# docker run -d \
-#   -p "${PORT}":80 \
-#   --name "${CONTAINER_NAME}" \
-#   "${IMAGE_NAME}" || {
-#   echo "容器启动失败"
-#   exit 1
-# }
 echo "启动 ${IMAGE_NAME} 容器，使用端口 ${PORT}..."
 docker run -d \
   -p "${PORT}":${PORT} \
