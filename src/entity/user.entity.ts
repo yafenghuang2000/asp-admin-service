@@ -19,7 +19,7 @@ export class UserEntity {
   /**
    * 主键，由数据库自动生成
    */
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   public id: number;
 
   /**
@@ -35,10 +35,17 @@ export class UserEntity {
   public password: string;
 
   /**
+   * 姓名
+   */
+
+  @Column({ nullable: false })
+  public nickname: string;
+
+  /**
    * 手机号码，允许为空
    */
-  @Column({ nullable: true })
-  public mobile_number: string;
+  @Column({ nullable: false })
+  public phone: string;
 
   /**
    * 邮箱，唯一且不能为空
@@ -47,22 +54,23 @@ export class UserEntity {
   public email: string;
 
   /**
-   * 用户ID，允许为空
-   */
-  @Column({ nullable: true })
-  public user_id: string;
-
-  /**
    * 用户类型，允许为空
    */
   @Column({ nullable: true })
-  public user_type: string;
+  public type: string;
 
   /**
    * 状态，允许为空
    */
-  @Column({ type: 'tinyint', default: 0, nullable: true })
-  public status: number;
+  @Column({ type: 'varchar', default: 0, nullable: true })
+  public status: string;
+
+  /**
+   * 所属组织
+   */
+
+  @Column({ type: 'varchar', nullable: true })
+  public organization: string;
 
   /**
    * 角色，允许为空

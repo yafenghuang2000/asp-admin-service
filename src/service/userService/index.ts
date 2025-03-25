@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import RedisCache from '@/utils/redisCache';
-// import PasswordService from '@/utils/PasswordService';
+import PasswordService from '@/utils/PasswordService';
 import { LoginDto, LoginResponseDto, RegisterDto, RegisterResponseDto } from '@/dto/user.dto';
 import { UserEntity } from '@/entity/user.entity';
 
@@ -13,7 +13,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly jwtService: JwtService, // 明确类型
-    // private passwordService: PasswordService,
+    private passwordService: PasswordService,
   ) {}
 
   public login = async (loginDto: LoginDto): Promise<LoginResponseDto> => {
@@ -75,19 +75,23 @@ export class UserService {
 
     // 检查手机号码是否符合要求
     const mobileRegex = /^1[3-9]\d{9}$/;
-    if (registerDto.mobile_number && !mobileRegex.test(registerDto.mobile_number)) {
+    if (registerDto.phone && !mobileRegex.test(registerDto.phone)) {
       throw new BadRequestException('手机号码格式不正确');
     }
 
-    // const hashedPassword = this.passwordService.hashPassword(registerDto.password);
+    const hashedPassword = this.passwordService.hashPassword(registerDto.password);
 
     try {
       const newUser = this.userRepository.create({
         username: registerDto.username,
-        // password: hashedPassword,
-        password: registerDto.password,
-        mobile_number: registerDto.mobile_number,
+        password: hashedPassword,
+        nickname: registerDto.nickname,
+        phone: registerDto.phone,
         email: registerDto.email,
+        type: registerDto.type,
+        status: registerDto.status,
+        organization: registerDto.organization || '',
+        role: registerDto.role || '',
       });
       const savedUser = await this.userRepository.save(newUser);
       if (!savedUser) {

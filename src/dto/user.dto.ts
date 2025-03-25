@@ -50,7 +50,6 @@ export class RegisterDto {
     type: String,
     description: '用户名',
     required: true,
-    example: 'admin',
   })
   public username: string;
 
@@ -58,9 +57,17 @@ export class RegisterDto {
   @IsString()
   @ApiProperty({
     type: String,
+    description: '姓名',
+    required: true,
+  })
+  public nickname: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    type: String,
     description: '密码',
     required: true,
-    example: '123456',
   })
   public password: string;
 
@@ -70,9 +77,8 @@ export class RegisterDto {
     type: String,
     description: '手机号码',
     required: true,
-    example: '15512341234',
   })
-  public mobile_number?: string;
+  public phone: string;
 
   @IsNotEmpty()
   @IsString()
@@ -81,9 +87,48 @@ export class RegisterDto {
     type: String,
     description: '邮箱',
     required: true,
-    example: '15512341234@qq.com',
   })
   public email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  @ApiProperty({
+    type: String,
+    description: '用户类型',
+    required: true,
+  })
+  public type: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  @ApiProperty({
+    type: String,
+    description: '所属组织',
+    required: true,
+  })
+  public organization: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  @ApiProperty({
+    type: String,
+    description: '是否启用',
+    required: true,
+  })
+  public status: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  @ApiProperty({
+    type: String,
+    description: '权限列表',
+    required: true,
+  })
+  public role: string;
 }
 
 /**
@@ -94,3 +139,15 @@ export class RegisterResponseDto {
   @Expose()
   public username: string;
 }
+
+//注册用户
+// export interface IRegisterUser {
+//   username: string;
+//   nickname: string; //姓名
+//   email: string;
+//   phone: string;
+//   type: string;
+//   organization?: string; //所属组织
+//   role?: string[]; //权限
+//   status: string;
+// }
