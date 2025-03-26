@@ -26,6 +26,7 @@ export class UserService {
     }
 
     const isMatch = this.passwordService.comparePassword(loginDto.password, user.password);
+    console.log(isMatch, 'isMatch');
     if (!isMatch) {
       throw new BadRequestException('密码错误');
     }
@@ -37,7 +38,8 @@ export class UserService {
         timestamp: new Date().getTime(),
         nonce: Math.random().toString(36).substring(10),
       },
-      { expiresIn: '24h', secret: process.env.JWT_SECRET! },
+      { expiresIn: '24h' },
+      // { expiresIn: '24h', secret: process.env.JWT_SECRET! },
     );
 
     const redisKey = `token:${user.username}`;
