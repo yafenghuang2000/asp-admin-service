@@ -39,7 +39,6 @@ export class UserService {
         nonce: Math.random().toString(36).substring(10),
       },
       { expiresIn: '24h' },
-      // { expiresIn: '24h', secret: process.env.JWT_SECRET! },
     );
 
     const redisKey = `token:${user.username}`;
