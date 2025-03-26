@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MenuClosureEntity, MenuEntity } from '@/entity/menu.entity';
@@ -16,7 +16,6 @@ export default class MenuService {
   ) {
     this.MenuModulePrivateMethods = new MenuModulePrivateMethods(menuRepository);
   }
-
   /**
    * 查询所有菜单项并构建树形结构
    * @returns {Promise<MenuEntity[]>} 返回一个 Promise，解析后为树形结构的菜单列表。
@@ -42,7 +41,7 @@ export default class MenuService {
 
       // 验证数据完整性
       if (closures.length === 0) {
-        throw new Error('菜单层级关系数据不完整');
+        throw new BadRequestException('菜单层级关系数据不完整');
       }
 
       // 验证每个菜单项都有对应的闭包关系
@@ -54,13 +53,10 @@ export default class MenuService {
 
       const missingMenus = [...menuIds].filter((id) => !closureMenuIds.has(id));
       if (missingMenus.length > 0) {
-        throw new Error(`以下菜单项缺少层级关系：${missingMenus.join(', ')}`);
+        throw new BadRequestException(`以下菜单项缺少层级关系：${missingMenus.join(', ')}`);
       }
-
       // 构建树形结构
       const tree = this.MenuModulePrivateMethods.buildTree(menus, closures);
-
-      // 打印树形结构
       // console.log('\n菜单树形结构：');
       this.MenuModulePrivateMethods.printMenuTree(tree);
 

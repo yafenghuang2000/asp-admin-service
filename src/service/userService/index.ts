@@ -25,11 +25,10 @@ export class UserService {
       throw new BadRequestException('用户不存在');
     }
 
-    // const isMatch = this.passwordService.comparePassword(loginDto.password, user.password);
-
-    // if (!isMatch) {
-    //   throw new BadRequestException('密码错误');
-    // }
+    const isMatch = this.passwordService.comparePassword(loginDto.password, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('密码错误');
+    }
 
     const token = this.jwtService.sign(
       {
