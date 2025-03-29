@@ -20,7 +20,7 @@ import * as process from 'node:process';
       defaultStrategy: 'jwt',
     }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: process.env.JWT_SECRET ?? '',
       signOptions: { expiresIn: '1h' },
     }),
   ],
@@ -68,6 +68,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: process.env.JWT_SECRET ?? '',
     });
   }
+
   public validate(payload: unknown): unknown {
     return payload;
   }
@@ -106,6 +107,7 @@ export class JwtAuthGuard implements CanActivate {
       return false;
     }
   }
+
   // 从请求头中提取JWT令牌的私有方法
   private extractTokenFromHeader(request: Request): string | undefined {
     // 获取Authorization请求头

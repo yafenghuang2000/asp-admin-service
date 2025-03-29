@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -105,4 +105,10 @@ export class UserService {
       throw new BadRequestException(`用户创建失败: ${(error as Error).message || '未知错误'}`);
     }
   }
+
+  // public async queryUser() {
+  //   const sql = `SELECT *
+  //                FROM user_info`;
+  //   return await this.userRepository.query(sql);
+  // }
 }

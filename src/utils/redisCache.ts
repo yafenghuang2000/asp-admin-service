@@ -24,17 +24,34 @@ class RedisCache {
   }
 
   //设置缓存
-  public async set(key: string, value: unknown, ttl?: number): Promise<boolean> {
+  // public async set(key: string, value: unknown, ttl?: number): Promise<boolean> {
+  //   try {
+  //     if (ttl) {
+  //       await this.client.set(key, JSON.stringify(value), 'EX', ttl);
+  //     } else {
+  //       await this.client.set(key, JSON.stringify(value));
+  //     }
+  //     return true; // 返回 true 表示缓存成功
+  //   } catch (error) {
+  //     console.error('Failed to set value in Redis:', error);
+  //     return false; // 返回 false 表示缓存失败
+  //   }
+  // }
+
+  public async set(
+    key: string,
+    value: string | number | boolean | object | null,
+    ttl: number = 3600,
+  ): Promise<boolean> {
     try {
-      if (ttl) {
-        await this.client.set(key, JSON.stringify(value), 'EX', ttl);
-      } else {
-        await this.client.set(key, JSON.stringify(value));
-      }
-      return true; // 返回 true 表示缓存成功
+      const serializedValue = JSON.stringify(value);
+      const result = ttl
+        ? await this.client.set(key, serializedValue, 'EX', ttl)
+        : await this.client.set(key, serializedValue);
+      return result === 'OK';
     } catch (error) {
       console.error('Failed to set value in Redis:', error);
-      return false; // 返回 false 表示缓存失败
+      throw new Error(`Failed to set value in Redis: ${error.message}`);
     }
   }
 

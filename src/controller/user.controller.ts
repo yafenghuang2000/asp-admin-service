@@ -6,6 +6,7 @@ import { UserService } from '@/service/userService';
 @Controller('user')
 export class UserController {
   constructor(private readonly useService: UserService) {}
+
   @Post('login')
   @ApiOperation({ summary: '用户登录' })
   @ApiBody({
@@ -33,4 +34,14 @@ export class UserController {
       throw new InternalServerErrorException(error);
     }
   }
+
+  // @Post('query-users')
+  // @ApiOperation({ summary: '查询用户列表' })
+  // public async queryUsers(): Promise<any> {
+  //   try {
+  //     // return await this.useService.queryUser();
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(error);
+  //   }
+  // }
 }
